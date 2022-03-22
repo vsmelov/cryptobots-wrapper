@@ -74,6 +74,22 @@ contract NFTWrapper is IGetBot, ReentrancyGuard, Ownable, ERC721 {
         botCore.transferFrom(address(this), msg.sender, tokenId);
     }
 
+    function wrapMany(uint256[] calldata tokenIds) external nonReentrant {
+        for (uint256 i; i < tokenIds.length; i++) {
+            botCore.transferFrom(msg.sender, address(this), tokenIds[i]);
+            _mint(msg.sender, tokenIds[i]);
+        }
+    }
+
+    function unwrapMany(uint256[] calldata tokenIds) external nonReentrant {
+        for (uint256 i; i < tokenIds.length; i++) {
+            uint256 tokenId = tokenIds[i];
+            require(ownerOf(tokenId) == msg.sender, "NFTWrapper: unwrap from incorrect owner");
+            _burn(tokenId);
+            botCore.transferFrom(address(this), msg.sender, tokenId);
+        }
+    }
+
     function getBot(uint256 _id)
         external
         view
